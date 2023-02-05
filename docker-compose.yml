@@ -1,0 +1,39 @@
+version: '3.3'
+
+services:
+
+  api:
+    image: ghcr.io/ridiculouscircumstances/coop_paint_tool_nest_io/coop_paint_tool_nest_io
+    container_name: api_chat
+    restart: always
+    ports:  
+        - "5000:5000"
+    volumes:
+        - ./storage/static/chatimg:/storage/static/chatimg
+        - ./.env:/.env
+    links:
+      - "mysql"
+
+  mysql:
+    build: 
+      dockerfile: ./docker/db/Dockerfile
+    container_name: db_chat
+    ports:  
+        - "3307:3306"
+    volumes:
+      - ./storage/docker/mysql:/var/lib/mysql
+    environment:
+        - "MYSQL_ROOT_PASSWORD=root"
+        - "MYSQL_USER=app_user"
+        - "MYSQL_PASSWORD=secret"
+        - "MYSQL_DATABASE=app"
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+  
+  client:
+    image: ghcr.io/ridiculouscircumstances/coop_tool_client_pro/coop_tool_client_pro:latest
+    container_name: client_chat
+    restart: always
+    ports:  
+        - "3000:3000"
+    links:
+      - "api"
